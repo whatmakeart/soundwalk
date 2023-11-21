@@ -4,9 +4,11 @@
 <head>
     <title>GeoLocation Sound Player</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0 auto;
             padding: 0;
             background-color: #f4f4f4;
@@ -15,6 +17,34 @@
             max-width: 1000px;
             padding-bottom: 4rem;
         }
+
+        :root {
+    --primary-color: #0275d8; /* Example primary color */
+    --secondary-color: #4CAF50; /* Example secondary color */
+    --background-color: #f4f4f4; /* Example background color */
+}
+
+body {
+    background-color: var(--background-color);
+    color: #333; /* Dark grey for text */
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    /* rest of your button styles */
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+}
+button:focus, button:active {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--secondary-color); /* Adds a shadow for focus/active */
+}
+
+/* Adjust as necessary for different elements */
+
 
         h1 {
             color: #0275d8;
@@ -86,17 +116,52 @@
             text-align: left;
         }
 
-        @media screen and (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
+        #mediaControls {
+    text-align: center;
+    margin-top: 20px;
+}
 
-            #map,
-            #userMap {
-                height: 500px;
-                width: 95%;
-            }
-        }
+#mediaControls button {
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#mediaControls button:hover {
+    background-color: #45a049;
+}
+
+@media screen and (max-width: 768px) {
+    /* Styles for screens smaller than 768px */
+    body {
+        font-size: 16px; /* Larger font size for readability */
+    }
+
+    #map, #userMap {
+        height: 300px; /* Smaller maps for mobile */
+    }
+
+    #mediaControls button {
+        padding: 8px 15px; /* Smaller buttons for mobile */
+    }
+}
+
+@media screen and (min-width: 769px) {
+    /* Styles for screens larger than 768px */
+    body {
+        font-size: 18px; /* Adjust font size for desktop */
+    }
+
+    #map, #userMap {
+        height: 500px; /* Larger maps for desktop */
+    }
+}
+
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -111,7 +176,11 @@
     <div id="status">
         <p id="remainingTime"></p>
     </div>
-    <br>
+    <div id="mediaControls">
+    <button id="playPauseButton">Play/Pause</button>
+    <button id="stopButton">Stop</button>
+</div>
+
     <button style="width:100%; height:60px;" id="startButton">Click to allow sounds to play</button>
 
 
@@ -259,6 +328,27 @@ function stopSound() {
 
             return R * c;
         }
+
+
+function togglePlayPause() {
+    if (currentSound && currentSound.audio) {
+        if (currentSound.audio.paused) {
+            currentSound.audio.play();
+            updateStatus("Playing: " + currentSound.file);
+        } else {
+            currentSound.audio.pause();
+            updateStatus("Paused: " + currentSound.file);
+        }
+    }
+}
+
+function stopSound() {
+    if (currentSound && currentSound.audio) {
+        currentSound.audio.pause();
+        currentSound.audio.currentTime = 0;
+        updateStatus("Stopped: " + currentSound.file);
+    }
+}
 
 
 
