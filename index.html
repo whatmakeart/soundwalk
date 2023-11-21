@@ -96,7 +96,7 @@
                     closest = locations[i];
                 }
             }
-            return (minDistance <= 50 / 3.2808) ? closest : null; // Convert 50 feet to meters
+            return closest; // Removed the distance check
         }
 
         function getDistance(lat1, lon1, lat2, lon2) {
