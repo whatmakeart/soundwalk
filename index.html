@@ -26,6 +26,11 @@
     <div id="status"></div>
 
     <div id="map" style="height: 400px; width: 100%;"></div>
+    <br>
+    <div id="distanceInfo" style="margin-top: 20px;"></div>
+    <br>
+    <div id="userMap" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
     <script>
         // Global variable to store the current playing sound
         var currentSound = null;
@@ -135,6 +140,51 @@
 
         // Call the initMap function when the window loads
         window.onload = initMap;
+        window.onload = initUserMap;
+
+        // Initialize the Leaflet Map for user's location
+        function initUserMap(latitude, longitude) {
+            var userMap = L.map('userMap').setView([latitude, longitude], 17);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(userMap);
+
+            // Marker for user's location
+            var userMarker = L.marker([latitude, longitude]).addTo(userMap)
+                .bindPopup('Your Location').openPopup();
+
+            // Find and show distance and direction to closest sound
+            showDistanceAndDirection(userMap, latitude, longitude);
+        }
+
+        function showDistanceAndDirection(map, lat, lon) {
+            var closestLocation = findClosestLocation(lat, lon);
+            if (closestLocation) {
+                var distance = getDistance(lat, lon, closestLocation.latitude, closestLocation.longitude);
+                var direction = getDirection(lat, lon, closestLocation.latitude, closestLocation.longitude);
+
+                // Update distance info
+                document.getElementById('distanceInfo').innerHTML =
+                    'Closest Sound: ' + closestLocation.soundFile + '<br>' +
+                    'Distance: ' + distance.toFixed(2) + ' meters' + '<br>' +
+                    'Direction: ' + direction;
+
+                // Add marker for closest sound location
+                L.marker([closestLocation.latitude, closestLocation.longitude]).addTo(map)
+                    .bindPopup(closestLocation.soundFile).openPopup();
+            }
+        }
+
+        function getDirection(lat1, lon1, lat2, lon2) {
+            var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            var x = Math.cos(lat1) * Math.sin(lat2) -
+                Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            var brng = Math.atan2(y, x) * 180 / Math.PI;
+            return brng < 0 ? brng + 360 : brng;
+        }
 
     </script>
 </body>
