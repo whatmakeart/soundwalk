@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>GeoLocation Sound Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #status {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>GeoLocation Sound Player</h1>
+    <p>Your sound will be updated based on your location every 2 seconds.</p>
+    <div id="status"></div>
+
+    <script>
+        // Global variable to store the current playing sound
+        var currentSound = null;
+
+        // Define an array of locations and corresponding sound files
+        var locations = [
+            { latitude: 41.510434, longitude: -81.602960, soundFile: 'sound1.mp3' }, // Hypothetical coordinates around CIA
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+            { latitude: 41.50914, longitude: -81.60805, soundFile: 'sound2.mp3' },
+
+            // ... add more locations and sound files as needed
+
+
+        ];
+
+        function checkLocationAndUpdateSound() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+                }, function (error) {
+                    updateStatus("Error: " + error.message);
+                });
+            } else {
+                updateStatus("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function playSoundBasedOnLocation(latitude, longitude) {
+            var closestLocation = findClosestLocation(latitude, longitude);
+            if (closestLocation && currentSound !== closestLocation.soundFile) {
+                playSound(closestLocation.soundFile);
+                currentSound = closestLocation.soundFile;
+                updateStatus("Playing: " + closestLocation.soundFile);
+            }
+        }
+
+        function findClosestLocation(lat, lon) {
+            var minDistance = Infinity;
+            var closest = null;
+            for (var i = 0; i < locations.length; i++) {
+                var distance = getDistance(lat, lon, locations[i].latitude, locations[i].longitude);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = locations[i];
+                }
+            }
+            return (minDistance <= 50 / 3.2808) ? closest : null; // Convert 50 feet to meters
+        }
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            // Haversine formula to calculate distance between two coordinates
+            var R = 6371e3; // metres
+            var φ1 = lat1 * Math.PI / 180;
+            var φ2 = lat2 * Math.PI / 180;
+            var Δφ = (lat2 - lat1) * Math.PI / 180;
+            var Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            var a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c;
+        }
+
+        function playSound(soundFile) {
+            if (currentSound) {
+                // Stop the current sound before playing a new one
+                currentSound.audio.pause();
+            }
+            var audio = new Audio(soundFile);
+            audio.play();
+            currentSound = { audio: audio, file: soundFile };
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').innerText = message;
+        }
+
+        // Check the user's location every 2 seconds
+        setInterval(checkLocationAndUpdateSound, 2000);
+    </script>
+</body>
+
+</html>
