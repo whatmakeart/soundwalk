@@ -14,7 +14,9 @@
             margin-top: 20px;
         }
     </style>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
     </script>
 </head>
 
@@ -24,7 +26,6 @@
     <div id="status"></div>
 
     <div id="map" style="height: 400px; width: 100%;"></div>
-
     <script>
         // Global variable to store the current playing sound
         var currentSound = null;
@@ -114,23 +115,27 @@
         // Check the user's location every 2 seconds
         setInterval(checkLocationAndUpdateSound, 2000);
 
-        // Initialize the Google Map
+        // Initialize the Leaflet Map
         function initMap() {
-            var mapCenter = { lat: 41.50912, longitude: -81.60800 }; // Center the map around CIA
-            var map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 17,
-                center: mapCenter
-            });
+            var mapCenter = [41.50912, -81.60800]; // Center the map around CIA
+            var map = L.map('map').setView(mapCenter, 17);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
 
             // Add markers for each location
             locations.forEach(function (location) {
-                var marker = new google.maps.Marker({
-                    position: { lat: location.latitude, lng: location.longitude },
-                    map: map,
-                    title: location.soundFile
-                });
+                L.marker([location.latitude, location.longitude]).addTo(map)
+                    .bindPopup(location.soundFile);
             });
         }
+
+        // Call the initMap function when the window loads
+        window.onload = initMap;
+
     </script>
 </body>
 
