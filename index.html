@@ -169,15 +169,20 @@
                         updateStatus("Playing: " + closestLocation.soundFile);
                         showDistanceAndDirection(position.coords.latitude, position.coords.longitude);
                     }
+
+                    // Ensure closestLocation is defined before this line
+                    updateCompassBox(closestLocation, minDistance);
                 }, function (error) {
                     updateStatus("Error: " + error.message);
                 });
             } else {
                 updateStatus("Geolocation is not supported by this browser.");
             }
-
-            updateCompassBox(closestLocation, minDistance);
         }
+
+
+
+
 
         function playSoundBasedOnLocation(latitude, longitude) {
             var closestLocation = findClosestLocation(latitude, longitude);
