@@ -164,15 +164,19 @@
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     var closestLocation = findClosestLocation(position.coords.latitude, position.coords.longitude);
-                    if (closestLocation && currentSound !== closestLocation.soundFile) {
-                        playSound(closestLocation.soundFile);
-                        currentSound = closestLocation.soundFile;
-                        updateStatus("Playing: " + closestLocation.soundFile);
-                        showDistanceAndDirection(position.coords.latitude, position.coords.longitude);
-                    }
+                    if (closestLocation) {
+                        var minDistance = getDistance(position.coords.latitude, position.coords.longitude, closestLocation.latitude, closestLocation.longitude);
 
-                    // Ensure closestLocation is defined before this line
-                    updateCompassBox(closestLocation, minDistance);
+                        if (currentSound !== closestLocation.soundFile) {
+                            playSound(closestLocation.soundFile);
+                            currentSound = closestLocation.soundFile;
+                            updateStatus("Playing: " + closestLocation.soundFile);
+                            showDistanceAndDirection(position.coords.latitude, position.coords.longitude);
+                        }
+
+                        // Use minDistance here
+                        updateCompassBox(closestLocation, minDistance);
+                    }
                 }, function (error) {
                     updateStatus("Error: " + error.message);
                 });
@@ -180,6 +184,8 @@
                 updateStatus("Geolocation is not supported by this browser.");
             }
         }
+
+
 
 
         function playSoundBasedOnLocation(latitude, longitude) {
