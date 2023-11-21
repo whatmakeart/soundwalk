@@ -23,7 +23,10 @@
 <body>
     <h1>GeoLocation Sound Player</h1>
     <p>Your sound will be updated based on your location every 2 seconds.</p>
+    <br>
     <div id="status"></div>
+    <br>
+    <button id="startButton">Start</button>
 
     <div id="map" style="height: 400px; width: 100%;"></div>
     <br>
@@ -121,10 +124,13 @@
                 currentSound.audio.pause();
             }
             var audio = new Audio(soundFile);
-            audio.play();
+            audio.play().catch(e => {
+                console.error("Error playing sound: ", e);
+                // Handle the error, e.g., show a message to the user
+                updateStatus("Error playing sound. Please interact with the page to enable audio playback.");
+            });
             currentSound = { audio: audio, file: soundFile };
         }
-
 
         function updateStatus(message) {
             document.getElementById('status').innerText = message;
@@ -221,6 +227,20 @@
                 console.log("Geolocation is not supported by this browser.");
             }
         };
+
+        document.getElementById('startButton').addEventListener('click', function () {
+            startLocationPolling();
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+                }, function (error) {
+                    updateStatus("Error: " + error.message);
+                });
+            } else {
+                updateStatus("Geolocation is not supported by this browser.");
+            }
+        });
+
     </script>
 </body>
 
