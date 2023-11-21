@@ -228,8 +228,11 @@
         }
 
 
+
+
         function playSound(soundFile) {
-            if (currentSound) {
+            // Check if currentSound exists and has a property 'audio'
+            if (currentSound && currentSound.audio) {
                 currentSound.audio.pause();
             }
             var audio = new Audio(soundFile);
