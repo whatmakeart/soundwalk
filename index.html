@@ -100,15 +100,16 @@
             return R * c;
         }
 
+
         function playSound(soundFile) {
             if (currentSound) {
-                // Stop the current sound before playing a new one
                 currentSound.audio.pause();
             }
             var audio = new Audio(soundFile);
             audio.play();
             currentSound = { audio: audio, file: soundFile };
         }
+
 
         function updateStatus(message) {
             document.getElementById('status').innerText = message;
@@ -182,8 +183,18 @@
         }
 
         // Call the initMap function when the window loads
-        window.onload = initMap;
-        window.onload = initUserMap;
+        window.onload = function () {
+            initMap(); // Initialize the sound locations map
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    initUserMap(position.coords.latitude, position.coords.longitude); // Initialize the user's map
+                }, function (error) {
+                    console.error("Error getting location: " + error.message);
+                });
+            } else {
+                console.log("Geolocation is not supported by this browser.");
+            }
+        };
     </script>
 </body>
 
