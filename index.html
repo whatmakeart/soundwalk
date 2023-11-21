@@ -384,7 +384,6 @@
         });
 
         document.getElementById('startButton').addEventListener('click', function () {
-            startLocationPolling();
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
