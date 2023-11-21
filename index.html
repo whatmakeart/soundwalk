@@ -70,7 +70,13 @@
         }
 
         #compassArrow {
-            /* Style the compass arrow here */
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-image: url('path-to-your-arrow-icon.png');
+            /* Replace with the path to your arrow icon */
+            background-size: cover;
+            margin-right: 10px;
         }
 
         @media screen and (max-width: 768px) {
@@ -160,6 +166,8 @@
             } else {
                 updateStatus("Geolocation is not supported by this browser.");
             }
+
+            updateCompassBox(closestLocation, minDistance);
         }
 
         function playSoundBasedOnLocation(latitude, longitude) {
@@ -234,18 +242,31 @@
         }
 
 
-        // Add a function to update the compass arrow box
         function updateCompassBox(closestLocation, distance) {
-            // Logic to determine the direction for the compass arrow
-            // Update the innerHTML of the compassArrow, soundInfo, and soundDistance elements
+            if (!closestLocation) return;
+
+            // Calculate the direction to the closest sound
+            var direction = getDirection(userMarker.getLatLng().lat, userMarker.getLatLng().lng, closestLocation.latitude, closestLocation.longitude);
+            var arrowDirectionStyle = 'transform: rotate(' + direction + 'deg);';
+
+            // Update the compass arrow box
+            var compassArrowElement = document.getElementById('compassArrow');
+            var soundInfoElement = document.getElementById('soundInfo');
+            var soundDistanceElement = document.getElementById('soundDistance');
+
+            compassArrowElement.setAttribute('style', arrowDirectionStyle);
+            soundInfoElement.innerText = 'Sound: ' + closestLocation.soundFile;
+            soundDistanceElement.innerText = 'Distance: ' + distance.toFixed(2) + ' meters';
         }
 
-        // Within the geolocation callback, update the compass box
-        function checkLocationAndUpdateSound() {
-            // Existing geolocation code...
-
-            updateCompassBox(closestLocation, minDistance);
+        function getDirection(lat1, lon1, lat2, lon2) {
+            var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            var x = Math.cos(lat1) * Math.sin(lat2) -
+                Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            var brng = Math.atan2(y, x) * 180 / Math.PI;
+            return brng < 0 ? brng + 360 : brng;
         }
+
 
         function updateStatus(message) {
             document.getElementById('status').innerText = message;
