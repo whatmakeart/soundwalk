@@ -270,6 +270,7 @@
         }
 
 
+
         function updateStatus(message) {
             document.getElementById('status').innerText = message;
         }
@@ -357,14 +358,6 @@
             }
         }
 
-        function getDirection(lat1, lon1, lat2, lon2) {
-            var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-            var x = Math.cos(lat1) * Math.sin(lat2) -
-                Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-            var brng = Math.atan2(y, x) * 180 / Math.PI;
-            return brng < 0 ? brng + 360 : brng;
-        }
-
         // Modified window.onload function
         window.onload = function () {
             initMap();
@@ -380,12 +373,10 @@
             }
         };
 
+
         document.getElementById('startButton').addEventListener('click', function () {
             checkLocationAndUpdateSound();
             this.style.display = 'none';
-        });
-
-        document.getElementById('startButton').addEventListener('click', function () {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
