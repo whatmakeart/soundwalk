@@ -42,18 +42,6 @@
         var userMarker = null;
         var locations = [/*... your locations ...*/];
 
-        // Check the user's location every 2 seconds
-        function startLocationPolling() {
-            if ("geolocation" in navigator) {
-                setInterval(function () {
-                    navigator.geolocation.getCurrentPosition(updateUserLocation, function (error) {
-                        updateStatus("Error: " + error.message);
-                    });
-                }, 2000);
-            } else {
-                updateStatus("Geolocation is not supported by this browser.");
-            }
-        }
 
         // Define an array of locations and corresponding sound files
         var locations = [
@@ -71,7 +59,13 @@
         function checkLocationAndUpdateSound() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function (position) {
-                    playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+                    var closestLocation = findClosestLocation(position.coords.latitude, position.coords.longitude);
+                    if (closestLocation && currentSound !== closestLocation.soundFile) {
+                        playSound(closestLocation.soundFile);
+                        currentSound = closestLocation.soundFile;
+                        updateStatus("Playing: " + closestLocation.soundFile);
+                        showDistanceAndDirection(position.coords.latitude, position.coords.longitude);
+                    }
                 }, function (error) {
                     updateStatus("Error: " + error.message);
                 });
@@ -125,9 +119,9 @@
             }
             var audio = new Audio(soundFile);
             audio.play().catch(e => {
-                console.error("Error playing sound: ", e);
-                // Handle the error, e.g., show a message to the user
-                updateStatus("Error playing sound. Please interact with the page to enable audio playback.");
+                // This is where the start button becomes necessary
+                document.getElementById('startButton').style.display = 'block';
+                updateStatus("Interact with the page to enable audio playback.");
             });
             currentSound = { audio: audio, file: soundFile };
         }
@@ -170,8 +164,9 @@
                 userMap.setView([latitude, longitude], 17);
             }
 
-            // Play sound and update distance info
-            playSoundBasedOnLocation(latitude, longitude);
+            // Play sound and update distance and direction info
+            playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+            showDistanceAndDirection(userMap, position.coords.latitude, position.coords.longitude);
         }
 
 
@@ -213,13 +208,13 @@
             return brng < 0 ? brng + 360 : brng;
         }
 
-        // Call the initMap function when the window loads
+        // Modified window.onload function
         window.onload = function () {
-            initMap(); // Initialize the sound locations map
-            startLocationPolling();
+            initMap();
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function (position) {
-                    initUserMap(position.coords.latitude, position.coords.longitude); // Initialize the user's map
+                    initUserMap(position.coords.latitude, position.coords.longitude);
+                    checkLocationAndUpdateSound();
                 }, function (error) {
                     console.error("Error getting location: " + error.message);
                 });
@@ -227,6 +222,11 @@
                 console.log("Geolocation is not supported by this browser.");
             }
         };
+
+        document.getElementById('startButton').addEventListener('click', function () {
+            checkLocationAndUpdateSound();
+            this.style.display = 'none';
+        });
 
         document.getElementById('startButton').addEventListener('click', function () {
             startLocationPolling();

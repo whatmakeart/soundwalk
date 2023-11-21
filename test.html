@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GeoLocation Sound Player</title>
+    <style>
+        /* Your existing CSS */
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <!-- Your existing HTML structure -->
+    <script>
+        // Your existing global variables and locations array
+
+        // Removed startLocationPolling function
+
+        function checkLocationAndUpdateSound() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var closestLocation = findClosestLocation(position.coords.latitude, position.coords.longitude);
+                    if (closestLocation && currentSound !== closestLocation.soundFile) {
+                        playSound(closestLocation.soundFile);
+                        currentSound = closestLocation.soundFile;
+                        updateStatus("Playing: " + closestLocation.soundFile);
+                        showDistanceAndDirection(position.coords.latitude, position.coords.longitude);
+                    }
+                }, function (error) {
+                    updateStatus("Error: " + error.message);
+                });
+            } else {
+                updateStatus("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Your existing functions: playSoundBasedOnLocation, findClosestLocation, getDistance
+
+        function playSound(soundFile) {
+            if (currentSound) {
+                currentSound.audio.pause();
+            }
+            var audio = new Audio(soundFile);
+            audio.play().catch(e => {
+                // This is where the start button becomes necessary
+                document.getElementById('startButton').style.display = 'block';
+                updateStatus("Interact with the page to enable audio playback.");
+            });
+            currentSound = { audio: audio, file: soundFile };
+        }
+
+        // Your existing updateStatus function
+
+        // Your existing initMap function
+
+        function updateUserLocation(position) {
+            // Your existing logic for updating user's map marker
+
+            // Play sound and update distance and direction info
+            playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+            showDistanceAndDirection(userMap, position.coords.latitude, position.coords.longitude);
+        }
+
+        // Your existing initUserMap function
+
+        function showDistanceAndDirection(map, lat, lon) {
+            // Your existing logic for showing distance and direction
+        }
+
+        // Modified window.onload function
+        window.onload = function () {
+            initMap();
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    initUserMap(position.coords.latitude, position.coords.longitude);
+                    checkLocationAndUpdateSound();
+                }, function (error) {
+                    console.error("Error getting location: " + error.message);
+                });
+            } else {
+                console.log("Geolocation is not supported by this browser.");
+            }
+        };
+
+        document.getElementById('startButton').addEventListener('click', function () {
+            checkLocationAndUpdateSound();
+            this.style.display = 'none';
+        });
+
+    </script>
+</body>
+
+</html>
