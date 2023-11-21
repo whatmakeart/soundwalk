@@ -151,15 +151,48 @@
         // Define an array of locations and corresponding sound files
         var locations = [
             { latitude: 41.510434, longitude: -81.602960, soundFile: 'sound1.mp3' }, // Hypothetical coordinates around CIA
-            { latitude: 41.510273, longitude: -81.602755, soundFile: 'sound2.mp3' },
+            { latitude: 41.510273, longitude: -81.602755, soundFile: 'sound4.mp3' },
             { latitude: 41.510098, longitude: -81.602483, soundFile: 'sound3.mp3' },
-            { latitude: 41.510696, longitude: -81.602362, soundFile: 'sound4.mp3' },
+            { latitude: 41.510696, longitude: -81.602362, soundFile: 'sound2.mp3' },
             { latitude: 41.510080, longitude: -81.601657, soundFile: 'sound5.mp3' },
 
             // ... add more locations and sound files as needed
 
 
         ];
+
+        function checkLocationPermission() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            // Existing logic...
+        }, function(error) {
+            if (error.code == error.PERMISSION_DENIED) {
+                updateStatus("Location permission denied. Please allow location access.");
+            } else {
+                updateStatus("Error: " + error.message);
+            }
+        });
+    } else {
+        updateStatus("Geolocation is not supported by this browser.");
+    }
+}
+
+function togglePlayPause() {
+    if (currentSound && currentSound.audio) {
+        if (currentSound.audio.paused) {
+            currentSound.audio.play();
+        } else {
+            currentSound.audio.pause();
+        }
+    }
+}
+
+function stopSound() {
+    if (currentSound && currentSound.audio) {
+        currentSound.audio.pause();
+        currentSound.audio.currentTime = 0;
+    }
+}
 
         function checkLocationAndUpdateSound() {
             if ("geolocation" in navigator) {
@@ -257,6 +290,10 @@
                     audio.play();
                 }
             };
+              // If a sound is already playing, pause it
+    if (currentSound && currentSound.audio && !currentSound.audio.paused) {
+        currentSound.audio.pause();
+    }
         }
 
         function updateRemainingTime(timeLeft) {
@@ -387,6 +424,9 @@
             } else {
                 console.log("Geolocation is not supported by this browser.");
             }
+
+               document.getElementById('playPauseButton').addEventListener('click', togglePlayPause);
+    document.getElementById('stopButton').addEventListener('click', stopSound);
         };
 
 
@@ -403,6 +443,9 @@
                 updateStatus("Geolocation is not supported by this browser.");
             }
         });
+
+        // Call the location permission check function
+checkLocationPermission();
 
     </script>
 </body>
