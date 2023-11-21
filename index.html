@@ -135,9 +135,7 @@
             });
         }
 
-        // Call the initMap function when the window loads
-        window.onload = initMap;
-        window.onload = initUserMap;
+
 
         // Initialize the Leaflet Map for user's location
         function initUserMap(latitude, longitude) {
@@ -183,6 +181,9 @@
             return brng < 0 ? brng + 360 : brng;
         }
 
+        // Call the initMap function when the window loads
+        window.onload = initMap;
+        window.onload = initUserMap;
     </script>
 </body>
 
