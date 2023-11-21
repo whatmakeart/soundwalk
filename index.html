@@ -40,7 +40,7 @@
 
         #map,
         #userMap {
-            height: 400px;
+            height: 700px;
             width: 90%;
             margin: 20px auto;
             border: 1px solid #ddd;
@@ -58,6 +58,21 @@
             margin: 20px auto;
         }
 
+        #compassBox {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            margin: 20px auto;
+            text-align: left;
+        }
+
+        #compassArrow {
+            /* Style the compass arrow here */
+        }
+
         @media screen and (max-width: 768px) {
             body {
                 font-size: 14px;
@@ -65,6 +80,7 @@
 
             #map,
             #userMap {
+                height: 500px;
                 width: 95%;
             }
         }
@@ -86,7 +102,13 @@
     <div id="map" style="height: 400px; width: 100%;"></div>
     <br>
     <div id="distanceInfo" style="margin-top: 20px;"></div>
-    <br>
+
+    <div id="compassBox">
+        <h2>Next Closest Sound</h2>
+        <div id="compassArrow"></div>
+        <p id="soundInfo"></p>
+        <p id="soundDistance"></p>
+    </div>
     <div id="userMap" style="height: 400px; width: 100%; margin-top: 20px;"></div>
 
     <div id="about">
@@ -187,9 +209,42 @@
             audio.play().catch(e => {
                 // This is where the start button becomes necessary
                 document.getElementById('startButton').style.display = 'block';
-                updateStatus("Interact with the page to enable audio playback.");
+                updateStatus("Click the button to enable audio playback permissions in your browser.");
             });
             currentSound = { audio: audio, file: soundFile };
+
+            // Display sound duration and remaining time
+            audio.onloadedmetadata = function () {
+                updateStatus("Playing: " + currentSound.file + " (Duration: " + audio.duration.toFixed(2) + " seconds)");
+            };
+            audio.ontimeupdate = function () {
+                updateRemainingTime(audio.duration - audio.currentTime);
+            };
+
+            // Loop the sound if the user is still there
+            audio.onended = function () {
+                if (stillInLocation) {
+                    audio.play();
+                }
+            };
+        }
+
+        function updateRemainingTime(timeLeft) {
+            document.getElementById('remainingTime').innerText = "Time Remaining: " + timeLeft.toFixed(2) + " seconds";
+        }
+
+
+        // Add a function to update the compass arrow box
+        function updateCompassBox(closestLocation, distance) {
+            // Logic to determine the direction for the compass arrow
+            // Update the innerHTML of the compassArrow, soundInfo, and soundDistance elements
+        }
+
+        // Within the geolocation callback, update the compass box
+        function checkLocationAndUpdateSound() {
+            // Existing geolocation code...
+
+            updateCompassBox(closestLocation, minDistance);
         }
 
         function updateStatus(message) {
@@ -201,8 +256,10 @@
 
         // Initialize the Leaflet Map
         function initMap() {
-            var mapCenter = [41.50912, -81.60800]; // Center the map around CIA
-            var map = L.map('map').setView(mapCenter, 17);
+            var mapCenter = getMapCenter(); // Get the center of all sound locations
+            var map = L.map('map').setView(mapCenter, 17); // Adjust zoom level if necessary
+
+
 
             // Add OpenStreetMap tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -234,6 +291,17 @@
             playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
             showDistanceAndDirection(userMap, position.coords.latitude, position.coords.longitude);
         }
+
+        // Add this code to calculate the center of the sound locations
+        function getMapCenter() {
+            var latSum = 0, lonSum = 0;
+            locations.forEach(function (loc) {
+                latSum += loc.latitude;
+                lonSum += loc.longitude;
+            });
+            return [latSum / locations.length, lonSum / locations.length];
+        }
+
 
 
         function initUserMap(latitude, longitude) {
