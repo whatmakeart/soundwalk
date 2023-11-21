@@ -14,12 +14,16 @@
             margin-top: 20px;
         }
     </style>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+    </script>
 </head>
 
 <body>
     <h1>GeoLocation Sound Player</h1>
     <p>Your sound will be updated based on your location every 2 seconds.</p>
     <div id="status"></div>
+
+    <div id="map" style="height: 400px; width: 100%;"></div>
 
     <script>
         // Global variable to store the current playing sound
@@ -106,6 +110,24 @@
 
         // Check the user's location every 2 seconds
         setInterval(checkLocationAndUpdateSound, 2000);
+
+        // Initialize the Google Map
+        function initMap() {
+            var mapCenter = { lat: 41.50912, longitude: -81.60800 }; // Center the map around CIA
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 17,
+                center: mapCenter
+            });
+
+            // Add markers for each location
+            locations.forEach(function (location) {
+                var marker = new google.maps.Marker({
+                    position: { lat: location.latitude, lng: location.longitude },
+                    map: map,
+                    title: location.soundFile
+                });
+            });
+        }
     </script>
 </body>
 
