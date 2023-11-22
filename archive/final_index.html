@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GeoLocation Sound Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            max-width: 1000px;
+            padding-bottom: 4rem;
+        }
+
+        :root {
+    --primary-color: #0275d8; /* Example primary color */
+    --secondary-color: #4CAF50; /* Example secondary color */
+    --background-color: #f4f4f4; /* Example background color */
+}
+
+body {
+    background-color: var(--background-color);
+    color: #333; /* Dark grey for text */
+}
+
+button {
+    background-color: var(--primary-color);
+    color: white;
+    /* rest of your button styles */
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+}
+button:focus, button:active {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--secondary-color); /* Adds a shadow for focus/active */
+}
+
+/* Adjust as necessary for different elements */
+
+
+        h1 {
+            color: #0275d8;
+        }
+
+        p,
+        div {
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #0275d8;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #025aa5;
+        }
+
+        #map,
+        #userMap {
+            height: 700px;
+            width: 90%;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        #status,
+        #distanceInfo {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        #compassBox {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            margin: 20px auto;
+            text-align: left;
+        }
+
+        #compassArrow {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-image: url('arrow.png');
+            /* Replace with the path to your arrow icon */
+            background-size: cover;
+            margin-right: 10px;
+        }
+
+        #about p {
+            text-align: left;
+        }
+
+        #mediaControls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#mediaControls button {
+    background-color: #4CAF50; /* Green background */
+    color: white;
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#mediaControls button:hover {
+    background-color: #45a049;
+}
+
+@media screen and (max-width: 768px) {
+    /* Styles for screens smaller than 768px */
+    body {
+        font-size: 16px; /* Larger font size for readability */
+    }
+
+    #map, #userMap {
+        height: 300px; /* Smaller maps for mobile */
+    }
+
+    #mediaControls button {
+        padding: 8px 15px; /* Smaller buttons for mobile */
+    }
+}
+
+@media screen and (min-width: 769px) {
+    /* Styles for screens larger than 768px */
+    body {
+        font-size: 18px; /* Adjust font size for desktop */
+    }
+
+    #map, #userMap {
+        height: 500px; /* Larger maps for desktop */
+    }
+}
+
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    </script>
+</head>
+
+<body>
+    <h1>GeoLocation Sound Player</h1>
+    <p>Your sound will be updated based on your location every 2 seconds.</p>
+    <br>
+    <div id="status">
+        <p id="remainingTime"></p>
+    </div>
+    <div id="mediaControls">
+    <button id="playPauseButton">Play/Pause</button>
+    <button id="stopButton">Stop</button>
+</div>
+
+    <button style="width:100%; height:60px;" id="startButton">Click to allow sounds to play</button>
+
+
+    <div id="map" style="height: 400px; width: 100%;"></div>
+    <br>
+    <div id="distanceInfo" style="margin-top: 20px;"></div>
+
+    <div id="compassBox">
+        <h2>Next Closest Sound</h2>
+        <div id="compassArrow"></div>
+        <p id="soundInfo"></p>
+        <p id="soundDistance"></p>
+    </div>
+    <div id="userMap" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
+    <div id="about">
+        <h2>About GeoLocation Sound Player</h2>
+        <p>
+            Welcome to the GeoLocation Sound Player! This unique web application offers an immersive audio experience
+            based on your physical location. As you move through different geographic areas, the soundscape changes,
+            playing location-specific audio tracks. This innovative feature utilizes real-time geolocation data to
+            enhance your auditory journey. Whether you're exploring a city, a park, or just walking around your
+            neighborhood, our GeoLocation Sound Player provides a dynamic and interactive way to experience sound.
+        </p>
+        <p>Made with love and AI.</p>
+    </div>
+
+    
+
+<script>
+// Modular JavaScript structure for geolocation and sound playing functionality
+const GeoLocationSoundPlayer = (function() {
+    var currentSound = null;
+    var userMap = null;
+    var userMarker = null;
+    var locations = [
+        { latitude: 41.510434, longitude: -81.602960, soundFile: 'sound1.mp3' },
+        // ... add more locations and sound files as needed
+    ];
+
+    function init() {
+        checkLocationPermission();
+        initMap();
+        bindUIActions();
+    }
+
+    function bindUIActions() {
+        document.getElementById('playPauseButton').addEventListener('click', togglePlayPause);
+        document.getElementById('stopButton').addEventListener('click', stopSound);
+        document.getElementById('startButton').addEventListener('click', function() {
+            checkLocationAndUpdateSound();
+            this.style.display = 'none';
+        });
+    }
+
+    function checkLocationPermission() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
+        } else {
+            updateStatus('Geolocation is not supported by this browser.');
+        }
+    }
+
+    function handleSuccess(position) {
+        // Existing logic for successful geolocation retrieval
+        initUserMap(position.coords.latitude, position.coords.longitude);
+        checkLocationAndUpdateSound();
+    }
+
+    function handleError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                updateStatus('User denied the request for Geolocation.');
+                break;
+            case error.POSITION_UNAVAILABLE:
+                updateStatus('Location information is unavailable.');
+                break;
+            case error.TIMEOUT:
+                updateStatus('The request to get user location timed out.');
+                break;
+            default:
+                updateStatus('An unknown error occurred.');
+                break;
+        }
+    }
+
+    
+    // Function definitions for playSound, togglePlayPause, stopSound, etc.
+
+    function togglePlayPause() {
+        if (currentSound && currentSound.audio) {
+            if (currentSound.audio.paused) {
+                currentSound.audio.play();
+            } else {
+                currentSound.audio.pause();
+            }
+        }
+    }
+
+    function stopSound() {
+        if (currentSound && currentSound.audio) {
+            currentSound.audio.pause();
+            currentSound.audio.currentTime = 0;
+        }
+    }
+
+    function playSound(soundFile) {
+        // Function logic for playing a sound file
+        // ...
+    }
+
+    // Additional utility functions can be added here
+
+
+    return {
+        init: init
+    };
+})();
+
+// Initialize GeoLocation Sound Player on document load
+document.addEventListener('DOMContentLoaded', function() {
+    GeoLocationSoundPlayer.init();
+});
+</script>
+
+
+</body>
+
+</html>
