@@ -179,7 +179,7 @@
                         updateCompassBox(closestLocation, minDistance);
                     }
                 }, function (error) {
-                    updateStatus("Error: " + error.message);
+                    updateStatus("Error: " + error.message + "Click the button to enable audio playback permissions in your browser.");
                 });
             } else {
                 updateStatus("Geolocation is not supported by this browser.");
