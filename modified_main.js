@@ -96,29 +96,8 @@ function checkLocationAndUpdateSound() {
     );
   } else {
     updateStatus("Geolocation is not supported by this browser.");
-    console.error("Geolocation is not supported by this browser.");
-    getGeolocationFromIP();
   }
 }
-
-function getGeolocationFromIP() {
-  fetch("https://ipapi.co/json/")
-    .then((response) => response.json())
-    .then((data) => {
-      useGeolocation(data.latitude, data.longitude);
-    })
-    .catch((error) => {
-      console.error("Error fetching IP-based geolocation:", error);
-    });
-}
-
-function useGeolocation(latitude, longitude) {
-  // Your code to handle the geolocation data
-  console.log("Latitude:", latitude, "Longitude:", longitude);
-  // Add further logic to use latitude and longitude
-}
-
-getGeolocation();
 
 function playSoundBasedOnLocation(latitude, longitude) {
   var closestLocation = findClosestLocation(latitude, longitude);
@@ -246,6 +225,18 @@ function updateStatus(message) {
   document.getElementById("status").innerText = message;
 }
 
+function applySettings() {
+  // Get the user input value
+  var frequencyInput = document.getElementById("updateFrequency").value;
+  var newInterval = parseInt(frequencyInput, 10) * 1000; // Convert to milliseconds
+
+  if (!isNaN(newInterval) && newInterval > 0) {
+    updateInterval = newInterval;
+  } else {
+    alert("Please enter a valid number for frequency");
+  }
+}
+
 // Modified checkLocationAndUpdateSound function to use updateInterval
 var lastUpdate = Date.now();
 
@@ -257,6 +248,7 @@ function checkLocationAndUpdateSound(position) {
 }
 
 // Call this in your window.onload or initialization logic
+
 
 // Throttle function
 function throttle(func, limit) {
@@ -370,9 +362,6 @@ function showDistanceAndDirection(map, lat, lon) {
   }
 }
 
-function errorFunction(error) {
-  console.error("Geolocation error:", error);
-}
 // Modified window.onload function
 window.onload = function () {
   initMap();
