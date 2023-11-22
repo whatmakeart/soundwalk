@@ -118,8 +118,6 @@ function useGeolocation(latitude, longitude) {
   // Add further logic to use latitude and longitude
 }
 
-getGeolocation();
-
 function playSoundBasedOnLocation(latitude, longitude) {
   var closestLocation = findClosestLocation(latitude, longitude);
   if (closestLocation && currentSound !== closestLocation.soundFile) {
