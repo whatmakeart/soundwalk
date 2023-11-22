@@ -10,11 +10,6 @@ var locations = [
 var sounds = {};
 var updateInterval = 5000;
 
-// Define default coordinates
-var defaultCoordinates = { latitude: 40.7128, longitude: -74.006 }; // Replace with your default coordinates
-
-// ... rest of your JavaScript code, including initMap and initUserMap functions
-
 // Preload sound files
 locations.forEach((loc) => (sounds[loc.soundFile] = new Audio(loc.soundFile)));
 
@@ -128,16 +123,6 @@ function updateStatus(message) {
 
 function initMap() {
   var mapCenter = getMapCenter();
-  if (!mapCenter || mapCenter.length !== 2 || isNaN(mapCenter[0]) || isNaN(mapCenter[1])) {
-    // Fallback to default coordinates obtained from IP address
-    mapCenter = defaultCoordinates;
-    if (!mapCenter || isNaN(mapCenter.latitude) || isNaN(mapCenter.longitude)) {
-      console.error("Invalid default coordinates.");
-      return; // Exit the function if no valid coordinates are available
-    }
-    mapCenter = [defaultCoordinates.latitude, defaultCoordinates.longitude];
-  }
-
   var map = L.map("map").setView(mapCenter, 17);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -152,38 +137,21 @@ function initMap() {
 
 function getMapCenter() {
   var latSum = 0,
-    lonSum = 0,
-    count = 0;
+    lonSum = 0;
   locations.forEach(function (loc) {
-    if (!isNaN(loc.latitude) && !isNaN(loc.longitude)) {
-      latSum += loc.latitude;
-      lonSum += loc.longitude;
-      count++;
-    }
+    latSum += loc.latitude;
+    lonSum += loc.longitude;
   });
-  if (count === 0) return null; // or return a default location
-  return [latSum / count, lonSum / count];
+  return [latSum / locations.length, lonSum / locations.length];
 }
 
 function initUserMap(latitude, longitude) {
-  if (isNaN(latitude) || isNaN(longitude)) {
-    // Fallback to default coordinates obtained from IP address
-    var coords = defaultCoordinates;
-    if (!coords || isNaN(coords.latitude) || isNaN(coords.longitude)) {
-      console.error("Invalid default coordinates.");
-      return; // Exit the function if no valid coordinates are available
-    }
-    latitude = coords.latitude;
-    longitude = coords.longitude;
-  }
-
+  // Initialize the map if not already done
   userMap = L.map("userMap").setView([latitude, longitude], 17);
-
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: "© OpenStreetMap contributors",
   }).addTo(userMap);
-
   userMarker = L.marker([latitude, longitude]).addTo(userMap).bindPopup("Your Location").openPopup();
 }
 
