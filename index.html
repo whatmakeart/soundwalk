@@ -45,262 +45,266 @@
     </div>
 
     <script>
-              var GeoLocationModule = (function () {
-                // Define an array of locations and corresponding sound files
-                var locations = [
-                  { latitude: 41.510434, longitude: -81.60296, soundFile: "sound5.mp3" }, // Hypothetical coordinates around CIA
-                  { latitude: 41.510273, longitude: -81.602755, soundFile: "sound4.mp3" },
-                  { latitude: 41.510098, longitude: -81.602483, soundFile: "sound3.mp3" },
-                  { latitude: 41.510696, longitude: -81.602362, soundFile: "sound2.mp3" },
-                  { latitude: 41.51008, longitude: -81.601657, soundFile: "sound1.mp3" },
-                ];
+      var GeoLocationModule = (function () {
+        // Define an array of locations and corresponding sound files
+        var locations = [
+          { latitude: 41.510434, longitude: -81.60296, soundFile: "sound5.mp3" }, // Hypothetical coordinates around CIA
+          { latitude: 41.510273, longitude: -81.602755, soundFile: "sound4.mp3" },
+          { latitude: 41.510098, longitude: -81.602483, soundFile: "sound3.mp3" },
+          { latitude: 41.510696, longitude: -81.602362, soundFile: "sound2.mp3" },
+          { latitude: 41.51008, longitude: -81.601657, soundFile: "sound1.mp3" },
+        ];
 
-                function getCurrentPosition(successCallback, errorCallback) {
-                  if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-                  } else {
-                    errorCallback({ message: "Geolocation is not supported by this browser." });
-                  }
-                }
-
-                function findClosestLocation(lat, lon) {
-                  var minDistance = Infinity;
-                  var closest = null;
-                  for (var i = 0; i < locations.length; i++) {
-                    var distance = getDistance(lat, lon, locations[i].latitude, locations[i].longitude);
-                    if (distance < minDistance) {
-                      minDistance = distance;
-                      closest = locations[i];
-                    }
-                  }
-                  return closest;
-                }
-
-                function getDistance(lat1, lon1, lat2, lon2) {
-                  // Haversine formula to calculate distance between two coordinates
-                  var R = 6371e3; // metres
-                  var φ1 = (lat1 * Math.PI) / 180;
-                  var φ2 = (lat2 * Math.PI) / 180;
-                  var Δφ = ((lat2 - lat1) * Math.PI) / 180;
-                  var Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-                  var a =
-                    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-                  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-                  return R * c;
-                }
-
-                function getDirection(lat1, lon1, lat2, lon2) {
-                  var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-                  var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-                  var brng = (Math.atan2(y, x) * 180) / Math.PI;
-                  return brng < 0 ? brng + 360 : brng;
-                }
-
-                return {
-                  getCurrentPosition: getCurrentPosition,
-                  findClosestLocation: findClosestLocation,
-                  getDistance: getDistance,
-                  getDirection: getDirection,
-                };
-              })();
-
-
-
-
-
-              var SoundModule = (function () {
-                var currentSound = null;
-
-                function playSound(soundFile) {
-                  if (currentSound) {
-                    currentSound.audio.pause();
-                  }
-                  var audio = new Audio(soundFile);
-                  audio.play().catch((e) => {
-
-
-                  currentSound = { audio: audio, file: soundFile };
-
-                  // Display sound duration and remaining time
-                  audio.onloadedmetadata = function () {
-                    updateStatus("Playing: " + currentSound.file + " (Duration: " + audio.duration.toFixed(2) + " seconds)");
-                  };
-                  audio.ontimeupdate = function () {
-                    updateRemainingTime(audio.duration - audio.currentTime);
-                  };
-
-                  // Loop the sound if the user is still there
-                  audio.onended = function () {
-                    if (stillInLocation) {
-                      audio.play();
-                    }
-                  };
-                }
-
-                function updateRemainingTime(timeLeft) {
-                  document.getElementById("remainingTime").innerText = "Time Remaining: " + timeLeft.toFixed(2) + " seconds";
-                }
-
-                return {
-                  playSound: playSound,
-                  updateRemainingTime: updateRemainingTime,
-                };
-              })();
-
-              var MapModule = (function () {
-                var userMap = null;
-                var userMarker = null;
-
-                function initMap() {
-                  var mapCenter = getMapCenter(); // Get the center of all sound locations
-                  var map = L.map("map").setView(mapCenter, 17); // Adjust zoom level if necessary
-
-                  // Add OpenStreetMap tiles
-                  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                    maxZoom: 19,
-                    attribution: "© OpenStreetMap contributors",
-                  }).addTo(map);
-
-                  // Add markers for each location
-                  locations.forEach(function (location) {
-                    L.marker([location.latitude, location.longitude]).addTo(map).bindPopup(location.soundFile);
-                  });
-                }
-
-                function initUserMap(latitude, longitude) {
-                  userMap = L.map("userMap").setView([latitude, longitude], 17);
-                  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                    maxZoom: 19,
-                    attribution: "© OpenStreetMap contributors",
-                  }).addTo(userMap);
-                  userMarker = L.marker([latitude, longitude]).addTo(userMap).bindPopup("Your Location").openPopup();
-                }
-
-                function updateUserLocation(position) {
-                  var latitude = position.coords.latitude;
-                  var longitude = position.coords.longitude;
-
-                  // Update user's map marker
-                  if (!userMap) {
-                    initUserMap(latitude, longitude);
-                  } else {
-                    userMarker.setLatLng([latitude, longitude]);
-                    userMap.setView([latitude, longitude], 17);
-                  }
-
-                  // Play sound and update distance and direction info
-                  playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
-                  showDistanceAndDirection(userMap, position.coords.latitude, position.coords.longitude);
-                }
-
-                // Add this code to calculate the center of the sound locations
-                function getMapCenter() {
-                  var latSum = 0,
-                    lonSum = 0;
-                  locations.forEach(function (loc) {
-                    latSum += loc.latitude;
-                    lonSum += loc.longitude;
-                  });
-                  return [latSum / locations.length, lonSum / locations.length];
-                }
-
-            function showDistanceAndDirection(map, lat, lon) {
-        var closestLocation = findClosestLocation(lat, lon);
-        if (closestLocation) {
-          var distance = getDistance(lat, lon, closestLocation.latitude, closestLocation.longitude);
-          var direction = getDirection(lat, lon, closestLocation.latitude, closestLocation.longitude);
-
-          // Update distance info
-          document.getElementById("distanceInfo").innerHTML =
-            "Closest Sound: " +
-            closestLocation.soundFile +
-            "<br>" +
-            "Distance: " +
-            distance.toFixed(2) +
-            " meters" +
-            "<br>" +
-            "Direction: " +
-            direction;
-
-          // Add marker for closest sound location
-          L.marker([closestLocation.latitude, closestLocation.longitude])
-            .addTo(map)
-            .bindPopup(closestLocation.soundFile)
-            .openPopup();
+        function getCurrentPosition(successCallback, errorCallback) {
+          if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+          } else {
+            errorCallback({ message: "Geolocation is not supported by this browser." });
+          }
         }
+
+        function findClosestLocation(lat, lon) {
+          var minDistance = Infinity;
+          var closest = null;
+          for (var i = 0; i < locations.length; i++) {
+            var distance = getDistance(lat, lon, locations[i].latitude, locations[i].longitude);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closest = locations[i];
+            }
+          }
+          return closest;
+        }
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+          // Haversine formula to calculate distance between two coordinates
+          var R = 6371e3; // metres
+          var φ1 = (lat1 * Math.PI) / 180;
+          var φ2 = (lat2 * Math.PI) / 180;
+          var Δφ = ((lat2 - lat1) * Math.PI) / 180;
+          var Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+          var a =
+            Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+          var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+          return R * c;
+        }
+
+        function getDirection(lat1, lon1, lat2, lon2) {
+          var y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+          var x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+          var brng = (Math.atan2(y, x) * 180) / Math.PI;
+          return brng < 0 ? brng + 360 : brng;
+        }
+
+        return {
+          getCurrentPosition: getCurrentPosition,
+          findClosestLocation: findClosestLocation,
+          getDistance: getDistance,
+          getDirection: getDirection, // Expose the getDirection function
+          locations: locations, // Expose the locations array
+        };
+      })();
+
+      var SoundModule = (function () {
+        var currentSound = null;
+
+        function playSound(soundFile) {
+          if (currentSound && currentSound.file === soundFile) {
+            return; // If the same sound is already playing, do nothing
+          }
+
+          if (currentSound) {
+            currentSound.audio.pause(); // Pause the current sound if a different one should play
+          }
+
+          var audio = new Audio(soundFile);
+          audio.play().catch((e) => {
+            console.error("Error playing sound: " + e);
+          });
+
+          currentSound = { audio: audio, file: soundFile };
+
+          audio.onloadedmetadata = function () {
+            updateStatus("Playing: " + currentSound.file + " (Duration: " + audio.duration.toFixed(2) + " seconds)");
+          };
+          audio.ontimeupdate = function () {
+            updateRemainingTime(audio.duration - audio.currentTime);
+          };
+
+          // In case the sound ends, check if it's still the closest sound and replay if necessary
+          audio.onended = function () {
+            checkLocationAndUpdateSound(); // This function needs to be accessible here
+          };
+        }
+
+        function updateRemainingTime(timeLeft) {
+          document.getElementById("remainingTime").innerText = "Time Remaining: " + timeLeft.toFixed(2) + " seconds";
+        }
+
+        function getCurrentSoundName() {
+          return currentSound ? currentSound.file : "";
+        }
+
+        return {
+          playSound: playSound,
+          updateRemainingTime: updateRemainingTime,
+          getCurrentSoundName: getCurrentSoundName,
+        };
+      })();
+
+      var MapModule = (function () {
+        var userMap = null;
+        var userMarker = null;
+
+        function initMap() {
+          var mapCenter = getMapCenter(); // Get the center of all sound locations
+          var map = L.map("map").setView(mapCenter, 17); // Adjust zoom level if necessary
+
+          // Add OpenStreetMap tiles
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "© OpenStreetMap contributors",
+          }).addTo(map);
+
+          // Add markers for each location
+          GeoLocationModule.locations.forEach(function (location) {
+            L.marker([location.latitude, location.longitude]).addTo(map).bindPopup(location.soundFile);
+          });
+        }
+
+        function initUserMap(latitude, longitude) {
+          userMap = L.map("userMap").setView([latitude, longitude], 17);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "© OpenStreetMap contributors",
+          }).addTo(userMap);
+          userMarker = L.marker([latitude, longitude]).addTo(userMap).bindPopup("Your Location").openPopup();
+        }
+
+        function updateUserLocation(position) {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+
+          // Update user's map marker
+          if (!userMap) {
+            initUserMap(latitude, longitude);
+          } else {
+            userMarker.setLatLng([latitude, longitude]);
+            userMap.setView([latitude, longitude], 17);
+          }
+
+          // Play sound and update distance and direction info
+          playSoundBasedOnLocation(position.coords.latitude, position.coords.longitude);
+          showDistanceAndDirection(userMap, position.coords.latitude, position.coords.longitude);
+        }
+
+        // Add this code to calculate the center of the sound locations
+        function getMapCenter() {
+          var latSum = 0,
+            lonSum = 0;
+          GeoLocationModule.locations.forEach(function (loc) {
+            latSum += loc.latitude;
+            lonSum += loc.longitude;
+          });
+          return [latSum / GeoLocationModule.locations.length, lonSum / GeoLocationModule.locations.length];
+        }
+
+        function showDistanceAndDirection(map, lat, lon) {
+          var closestLocation = findClosestLocation(lat, lon);
+          if (closestLocation) {
+            var distance = getDistance(lat, lon, closestLocation.latitude, closestLocation.longitude);
+            var direction = getDirection(lat, lon, closestLocation.latitude, closestLocation.longitude);
+
+            // Update distance info
+            document.getElementById("distanceInfo").innerHTML =
+              "Closest Sound: " +
+              closestLocation.soundFile +
+              "<br>" +
+              "Distance: " +
+              distance.toFixed(2) +
+              " meters" +
+              "<br>" +
+              "Direction: " +
+              direction;
+
+            // Add marker for closest sound location
+            L.marker([closestLocation.latitude, closestLocation.longitude])
+              .addTo(map)
+              .bindPopup(closestLocation.soundFile)
+              .openPopup();
+          }
+        }
+
+        return {
+          initMap: initMap,
+          initUserMap: initUserMap,
+          updateUserLocation: updateUserLocation,
+          showDistanceAndDirection: showDistanceAndDirection,
+        };
+      })();
+
+      function main() {
+        MapModule.initMap();
+        GeoLocationModule.getCurrentPosition(
+          function (position) {
+            MapModule.initUserMap(position.coords.latitude, position.coords.longitude);
+            checkLocationAndUpdateSound();
+          },
+          function (error) {
+            console.error("Error getting location: " + error.message);
+          }
+        );
+
+        setInterval(checkLocationAndUpdateSound, 2000);
+        // This is where the start button becomes necessary
+        document.getElementById("startButton").addEventListener("click", function () {
+          checkLocationAndUpdateSound();
+          this.style.display = "none";
+        });
       }
 
-                return {
-                  initMap: initMap,
-                  initUserMap: initUserMap,
-                  updateUserLocation: updateUserLocation,
-                  showDistanceAndDirection: showDistanceAndDirection,
-                };
-              })();
+      function checkLocationAndUpdateSound() {
+        GeoLocationModule.getCurrentPosition(
+          function (position) {
+            var closestLocation = GeoLocationModule.findClosestLocation(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            if (closestLocation) {
+              var minDistance = GeoLocationModule.getDistance(
+                position.coords.latitude,
+                position.coords.longitude,
+                closestLocation.latitude,
+                closestLocation.longitude
+              );
 
-              function main() {
-                MapModule.initMap();
-                GeoLocationModule.getCurrentPosition(
-                  function (position) {
-                    MapModule.initUserMap(position.coords.latitude, position.coords.longitude);
-                    checkLocationAndUpdateSound();
-                  },
-                  function (error) {
-                    console.error("Error getting location: " + error.message);
-                  }
-                );
-
-                setInterval(checkLocationAndUpdateSound, 2000);
-                              // This is where the start button becomes necessary
-                   document.getElementById("startButton").addEventListener("click", function () {
-            checkLocationAndUpdateSound();
-            this.style.display = "none";
-        });
+              if (SoundModule.currentSound !== closestLocation.soundFile) {
+                SoundModule.playSound(closestLocation.soundFile);
+                updateStatus("Playing: " + closestLocation.soundFile);
+                MapModule.showDistanceAndDirection(position.coords.latitude, position.coords.longitude, minDistance);
               }
 
-              function checkLocationAndUpdateSound() {
-                GeoLocationModule.getCurrentPosition(
-                  function (position) {
-                    var closestLocation = GeoLocationModule.findClosestLocation(
-                      position.coords.latitude,
-                      position.coords.longitude
-                    );
-                    if (closestLocation) {
-                      var minDistance = GeoLocationModule.getDistance(
-                        position.coords.latitude,
-                        position.coords.longitude,
-                        closestLocation.latitude,
-                        closestLocation.longitude
-                      );
+              updateCompassBox(closestLocation, minDistance);
+            }
+          },
+          function (error) {
+            updateStatus(
+              "Error: " + error.message + " Click the button to enable audio playback permissions in your browser."
+            );
+          }
+        );
+      }
 
-                      if (SoundModule.currentSound !== closestLocation.soundFile) {
-                        SoundModule.playSound(closestLocation.soundFile);
-                        updateStatus("Playing: " + closestLocation.soundFile);
-                        MapModule.showDistanceAndDirection(position.coords.latitude, position.coords.longitude, minDistance);
-                      }
+      main();
 
-                      updateCompassBox(closestLocation, minDistance);
-                    }
-                  },
-                  function (error) {
-                    updateStatus(
-                      "Error: " + error.message + " Click the button to enable audio playback permissions in your browser."
-                    );
-                  }
-                );
-
-
-              }
-
-              main();
-
-                function updateCompassBox(closestLocation, distance) {
+      function updateCompassBox(closestLocation, distance) {
         if (!closestLocation) return;
 
         // Calculate the direction to the closest sound
-        var direction = getDirection(
+        // Use the getDirection function from GeoLocationModule
+        var direction = GeoLocationModule.getDirection(
           userMarker.getLatLng().lat,
           userMarker.getLatLng().lng,
           closestLocation.latitude,
@@ -318,7 +322,7 @@
         soundDistanceElement.innerText = "Distance: " + distance.toFixed(2) + " meters";
       }
 
-       function updateStatus(message) {
+      function updateStatus(message) {
         document.getElementById("status").innerText = message;
       }
     </script>
