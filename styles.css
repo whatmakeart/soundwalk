@@ -1,165 +1,122 @@
+:root {
+  --primary-color: #0275d8; /* Example primary color */
+  --secondary-color: #4caf50; /* Example secondary color */
+  --background-color: #f4f4f4; /* Example background color */
+  --text-dark: #333; /* Dark grey for text */
+  --border-common: 1px solid #ddd;
+  --box-common: 8px solid #ddd;
+  --shadow-common: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 body {
-        font-family: "Roboto", sans-serif;
-        margin: 0 auto;
-        padding: 0;
-        background-color: var(--background-color);
-        color: #333; /* Dark grey for text*/
-        text-align: center;
-        max-width: 1000px;
-        padding-bottom: 4rem;
-      }
+  font-family: "Roboto", sans-serif;
+  margin: 0 auto;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-dark);
+  text-align: center;
+  max-width: 1000px;
+}
 
-      :root {
-        --primary-color: #0275d8; /* Example primary color */
-        --secondary-color: #4caf50; /* Example secondary color */
-        --background-color: #f4f4f4; /* Example background color */
-      }
+h1 {
+  color: var(--primary-color);
+}
 
-      button {
-        background-color: var(--primary-color);
-        color: white;
-        /* rest of your button styles */
-      }
+p, div {
+  margin: 10px 0;
+}
 
-      button:hover {
-        background-color: var(--secondary-color);
-      }
-      button:focus,
-      button:active {
-        outline: none;
-        box-shadow: 0 0 0 2px var(--secondary-color); /* Adds a shadow for focus/active */
-      }
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  text-transform: uppercase;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
 
-      /* Adjust as necessary for different elements */
+button:hover {
+  background-color: var(--secondary-color);
+}
 
-      h1 {
-        color: #0275d8;
-      }
+button:focus, button:active {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--secondary-color);
+}
 
-      p,
-      div {
-        margin: 10px 0;
-      }
+#map, #userMap, #status, #distanceInfo, #compassBox {
+  width: 90%;
+  margin: 20px auto;
+  border: var(--border-common);
+  border-radius: 8px;
+  box-shadow: var(--shadow-common);
+}
 
-      button {
-        background-color: #0275d8;
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        text-transform: uppercase;
-        font-weight: bold;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: background-color 0.3s ease;
-      }
+#map, #userMap {
+  height: 500px;
+  background-color: #e0e0e0; /* Placeholder background color */
+  background-image: url("path/to/your/placeholder-image.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
 
-      button:hover {
-        background-color: #025aa5;
-      }
+#compassArrow {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  background-image: url("arrow.png");
+  background-size: cover;
+  margin-right: 10px;
+}
 
-      #map,
-      #userMap {
-        height: 700px;
-        width: 90%;
-        margin: 20px auto;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-      }
+#about p {
+  text-align: left;
+}
 
-      #status,
-      #distanceInfo {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        width: 90%;
-        margin: 20px auto;
-      }
+#mediaControls {
+  text-align: center;
+  margin-top: 20px;
+}
 
-      #compassBox {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        width: 90%;
-        margin: 20px auto;
-        text-align: left;
-      }
+#mediaControls button {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-      #compassArrow {
-        display: inline-block;
-        width: 30px;
-        height: 30px;
-        background-image: url("arrow.png");
-        /* Replace with the path to your arrow icon */
-        background-size: cover;
-        margin-right: 10px;
-      }
+#mediaControls button:hover {
+  background-color: #45a049;
+}
 
-      #about p {
-        text-align: left;
-      }
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
 
-      #mediaControls {
-        text-align: center;
-        margin-top: 20px;
-      }
+  #map, #userMap {
+    height: 300px;
+  }
 
-      #mediaControls button {
-        background-color: #4caf50; /* Green background */
-        color: white;
-        padding: 10px 20px;
-        margin: 0 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
+  #mediaControls button {
+    padding: 8px 15px;
+  }
+}
 
-      #mediaControls button:hover {
-        background-color: #45a049;
-      }
+@media screen and (min-width: 769px) {
+  body {
+    font-size: 18px;
+  }
 
-      #map,
-      #userMap {
-        height: 500px; /* Adjust height as needed */
-        width: 100%; /* Full width of the container */
-        max-width: 1000px; /* Max width to contain on the screen */
-        margin: 20px auto;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #e0e0e0; /* Placeholder background color */
-        background-image: url("path/to/your/placeholder-image.png"); /* Placeholder image */
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
-      }
-      @media screen and (max-width: 768px) {
-        /* Styles for screens smaller than 768px */
-        body {
-          font-size: 16px; /* Larger font size for readability */
-        }
-
-        #map,
-        #userMap {
-          height: 300px; /* Smaller maps for mobile */
-        }
-
-        #mediaControls button {
-          padding: 8px 15px; /* Smaller buttons for mobile */
-        }
-      }
-
-      @media screen and (min-width: 769px) {
-        /* Styles for screens larger than 768px */
-        body {
-          font-size: 18px; /* Adjust font size for desktop */
-        }
-
-        #map,
-        #userMap {
-          height: 500px; /* Larger maps for desktop */
-        }
-      }
+  #map, #userMap {
+    height: 500px;
+  }
+}
